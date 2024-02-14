@@ -1,14 +1,14 @@
 # incremental_rust_game
 
 ## Setup Rust and WebAssembly Environment
-**Install Rust:** Ensure Rust is installed on your system. If not, install it via [rustup](https://rustup.rs/).
+**Install Rust:** [rustup](https://rustup.rs/)
 
-**Add wasm32 Target:** Add the WebAssembly target to your Rust toolchain.
+Add the WebAssembly target to your Rust toolchain:
 
 ```
 rustup target add wasm32-unknown-unknown
 ```
-**Install wasm-bindgen CLI:** This tool facilitates communication between Wasm modules and JS.
+Install wasm-bindgen CLI:
 
 ```
 cargo install wasm-bindgen-cli
