@@ -25,7 +25,7 @@ Make sure you have installed:
 .\BUILD.bat
 ```
 
-Open this url in any browser:
+Open this URL in any browser:
 ```
 http://localhost:8000/
 ```
