@@ -38,6 +38,9 @@ impl Game {
     }
 
     pub fn craft_axe(&mut self) -> bool {
+        if self.axe {
+            return false;
+        }
         if self.wood >= 10 && self.stone >= 5 {
             self.wood -= 10;
             self.stone -= 5;
@@ -49,6 +52,9 @@ impl Game {
     }
 
     pub fn craft_pickaxe(&mut self) -> bool {
+        if self.pickaxe {
+            return false;
+        }
         if self.wood >= 5 && self.stone >= 10 {
             self.wood -= 5;
             self.stone -= 10;
@@ -162,4 +168,31 @@ pub fn run() {
         .expect("should register `setInterval`");
 
     closure.forget(); // Prevent closure from being garbage collected
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn craft_axe_only_once() {
+        let mut game = Game::new();
+        game.wood = 20;
+        game.stone = 20;
+        assert!(game.craft_axe());
+        assert!(!game.craft_axe());
+        assert_eq!(game.get_wood(), 10);
+        assert_eq!(game.get_stone(), 15);
+    }
+
+    #[test]
+    fn craft_pickaxe_only_once() {
+        let mut game = Game::new();
+        game.wood = 20;
+        game.stone = 20;
+        assert!(game.craft_pickaxe());
+        assert!(!game.craft_pickaxe());
+        assert_eq!(game.get_wood(), 15);
+        assert_eq!(game.get_stone(), 10);
+    }
 }
