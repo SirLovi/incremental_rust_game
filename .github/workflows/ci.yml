@@ -21,6 +21,9 @@ jobs:
       - name: Install wasm-bindgen-cli
         run: cargo install wasm-bindgen-cli
 
+      - name: Add wasm32 target
+        run: rustup target add wasm32-unknown-unknown
+
       - name: Build WebAssembly
         run: |
           cargo build --target wasm32-unknown-unknown --verbose
