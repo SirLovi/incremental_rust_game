@@ -18,6 +18,7 @@ cargo install wasm-bindgen-cli
 Make sure you have installed:
 - Rust
 - Python
+- wasm-bindgen-cli
 
 `cd` to root of the repo and run in terminal:
 ```
