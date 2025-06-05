@@ -1,0 +1,30 @@
+name: Rust CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Install wasm-bindgen-cli
+        run: cargo install wasm-bindgen-cli
+
+      - name: Build WebAssembly
+        run: |
+          cargo build --target wasm32-unknown-unknown --verbose
+          wasm-bindgen target/wasm32-unknown-unknown/debug/incremental_rust_game.wasm --out-dir ./pkg --web
+
+      - name: Run tests
+        run: cargo test --verbose
