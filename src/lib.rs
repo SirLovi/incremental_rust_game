@@ -131,6 +131,16 @@ pub fn has_pickaxe_global() -> bool {
 }
 
 #[wasm_bindgen]
+pub fn get_wood_global() -> u32 {
+    GAME.with(|game| game.borrow().get_wood())
+}
+
+#[wasm_bindgen]
+pub fn get_stone_global() -> u32 {
+    GAME.with(|game| game.borrow().get_stone())
+}
+
+#[wasm_bindgen]
 pub fn passive_wood_collection() {
     GAME.with(|game| {
         let mut game = game.borrow_mut();
