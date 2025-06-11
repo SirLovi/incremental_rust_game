@@ -82,6 +82,15 @@ impl Buildings {
         *self.levels.entry(ty).or_insert(0) += 1;
     }
 
+    /// Decrease level by amount if possible
+    pub fn decrement(&mut self, ty: BuildingType, amount: u32) {
+        let entry = self.levels.entry(ty).or_insert(0);
+        *entry = entry.saturating_sub(amount);
+        if *entry == 0 {
+            self.levels.remove(&ty);
+        }
+    }
+
     /// Total yield per tick of all buildings
     pub fn total_yield(&self) -> Resources {
         let mut r = Resources::default();

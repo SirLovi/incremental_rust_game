@@ -4,6 +4,7 @@ let game;
 const resourcesDiv = document.getElementById('resources');
 const buildingsDiv = document.getElementById('buildings');
 const logDiv = document.getElementById('log');
+const achievementsDiv = document.getElementById('achievements');
 
 const resourceNames = ['wood', 'stone', 'food', 'iron', 'gold'];
 const buildingNames = ['farm', 'lumber_mill', 'quarry', 'mine', 'bakery'];
@@ -51,6 +52,24 @@ function updateResources() {
     }
 }
 
+function fetchLogs() {
+    let msg = game.pop_log();
+    while (msg !== undefined) {
+        log(msg);
+        msg = game.pop_log();
+    }
+}
+
+function updateAchievements() {
+    achievementsDiv.innerHTML = '';
+    const list = JSON.parse(game.achievements());
+    for (const ach of list) {
+        const p = document.createElement('p');
+        p.textContent = ach;
+        achievementsDiv.appendChild(p);
+    }
+}
+
 function buildButtons() {
     buildingsDiv.innerHTML = '';
     for (const name of buildingNames) {
@@ -75,11 +94,14 @@ async function run() {
     game = new Game();
     buildButtons();
     updateResources();
+    updateAchievements();
     let tickRateInput = document.getElementById('tick-rate');
 
     setInterval(() => {
         game.tick(Date.now() / 1000);
         updateResources();
+        fetchLogs();
+        updateAchievements();
     }, 1000);
 
     tickRateInput.onchange = () => {
@@ -98,6 +120,7 @@ async function run() {
             game.load(data);
             log('Game loaded');
             updateResources();
+            updateAchievements();
         }
     };
 }
