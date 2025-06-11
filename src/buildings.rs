@@ -18,7 +18,7 @@ pub enum BuildingType {
 }
 
 /// Static data for a building
-pub struct BuildingInfo {
+pub(crate) struct BuildingInfo {
     pub base_cost: Resources,
     pub growth: f64,
     pub yield_per_tick: Resources,
