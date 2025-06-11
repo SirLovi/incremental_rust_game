@@ -119,6 +119,12 @@ thread_local! {
     static GAME: RefCell<Game> = RefCell::new(Game::new());
 }
 
+pub fn reset_game() {
+    GAME.with(|game| {
+        *game.borrow_mut() = Game::new();
+    });
+}
+
 #[wasm_bindgen]
 pub fn collect_wood_global() -> u32 {
     GAME.with(|game| {

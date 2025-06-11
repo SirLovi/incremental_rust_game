@@ -16,3 +16,6 @@ web-sys = { version = "0.3", features = ["console","Window","Document"] }
 # For better control over time and async features
 futures = "0.3"
 js-sys = "0.3"
+
+[dev-dependencies]
+serial_test = "2"
