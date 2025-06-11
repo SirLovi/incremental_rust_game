@@ -20,10 +20,8 @@ base64 = "0.21"
 futures = "0.3"
 js-sys = "0.3"
 rand = "0.8"
+getrandom = { version = "0.2.16", features = ["js"] }
 
-[target.'cfg(target_arch = "wasm32")'.dependencies.getrandom]
-version = "0.2"
-features = ["js"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
