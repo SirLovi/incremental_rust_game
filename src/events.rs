@@ -1,4 +1,5 @@
 use crate::buildings::{BuildingType, Buildings};
+use crate::resources::Resources;
 use rand::Rng;
 
 /// Chance of farm loss event each tick
@@ -8,10 +9,15 @@ pub const FARM_LOSS_CHANCE: f64 = 0.05;
 /// event occurs.
 pub fn check_random_events<R: Rng>(
     buildings: &mut Buildings,
+    resources: &mut Resources,
     rng: &mut R,
     chance: f64,
 ) -> Option<String> {
-    farm_loss_event(buildings, rng, chance)
+    if rng.gen_bool(0.5) {
+        farm_loss_event(buildings, rng, chance)
+    } else {
+        treasure_event(resources, rng, chance)
+    }
 }
 
 /// 10% of farms are destroyed when triggered.
@@ -34,11 +40,21 @@ pub fn farm_loss_event<R: Rng>(
     None
 }
 
+/// Random treasure awarding gold
+pub fn treasure_event<R: Rng>(res: &mut Resources, rng: &mut R, chance: f64) -> Option<String> {
+    if rng.gen_bool(chance * 0.5) {
+        let gold = rng.gen_range(5..20) as f64;
+        res.gold += gold;
+        return Some(format!("Found a hidden treasure worth {gold} gold!"));
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::SeedableRng;
     use rand::rngs::StdRng;
+    use rand::SeedableRng;
     use wasm_bindgen_test::wasm_bindgen_test;
 
     #[wasm_bindgen_test]

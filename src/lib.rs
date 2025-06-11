@@ -1,20 +1,22 @@
 //! Re-export modules and provide wasm bindings
 
-mod resources;
-mod buildings;
-mod upgrades;
-mod research;
-mod systems;
 mod achievements;
+mod buildings;
 mod events;
+mod prestige;
+mod research;
+mod resources;
+mod systems;
+mod upgrades;
 
-pub use resources::*;
-pub use buildings::*;
-pub use upgrades::*;
-pub use research::*;
-pub use systems::*;
 pub use achievements::*;
+pub use buildings::*;
 pub use events::*;
+pub use prestige::*;
+pub use research::*;
+pub use resources::*;
+pub use systems::*;
+pub use upgrades::*;
 
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
@@ -86,5 +88,33 @@ impl Game {
             let list = g.borrow().achievements_list();
             serde_json::to_string(&list).expect("serialize achievements")
         })
+    }
+
+    /// Attempt to research a technology using science
+    pub fn research(name: &str) -> bool {
+        let tech = match name {
+            "mining" => Tech::Mining,
+            "baking" => Tech::Baking,
+            "electricity" => Tech::Electricity,
+            "education" => Tech::Education,
+            "alchemy" => Tech::Alchemy,
+            _ => return false,
+        };
+        GAME.with(|g| {
+            let mut state = g.borrow_mut();
+            let res_ptr = &mut state.resources as *mut _;
+            // SAFETY: no other mutable borrows exist
+            unsafe { state.research.try_unlock(tech, &mut *res_ptr) }
+        })
+    }
+
+    /// Perform a prestige reset
+    pub fn prestige() {
+        GAME.with(|g| g.borrow_mut().prestige());
+    }
+
+    /// Current prestige points
+    pub fn prestige_points() -> u32 {
+        GAME.with(|g| g.borrow().prestige.points)
     }
 }
