@@ -7,6 +7,18 @@ const logDiv = document.getElementById('log');
 
 const resourceNames = ['wood', 'stone', 'food', 'iron', 'gold'];
 const buildingNames = ['farm', 'lumber_mill', 'quarry', 'mine', 'bakery'];
+const buildingButtons = {};
+
+function formatCost(cost) {
+    const parts = [];
+    for (const r of resourceNames) {
+        const v = cost[r];
+        if (v > 0) {
+            parts.push(`${v.toFixed(1)} ${r}`);
+        }
+    }
+    return parts.join(', ');
+}
 
 function log(msg) {
     const p = document.createElement('p');
@@ -22,12 +34,28 @@ function updateResources() {
         span.textContent = `${name}: ${game.get_resource(name).toFixed(1)}`;
         resourcesDiv.appendChild(span);
     }
+
+    for (const name of buildingNames) {
+        const cost = JSON.parse(game.building_cost(name));
+        const btn = buildingButtons[name];
+        if (!btn) continue;
+        btn.textContent = `Build ${name} (${formatCost(cost)})`;
+        let affordable = true;
+        for (const r of resourceNames) {
+            if (game.get_resource(r) < cost[r]) {
+                affordable = false;
+                break;
+            }
+        }
+        btn.disabled = !affordable;
+    }
 }
 
 function buildButtons() {
     buildingsDiv.innerHTML = '';
     for (const name of buildingNames) {
         const btn = document.createElement('button');
+        buildingButtons[name] = btn;
         btn.textContent = `Build ${name}`;
         btn.className = 'btn';
         btn.onclick = () => {

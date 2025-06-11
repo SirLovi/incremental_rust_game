@@ -92,6 +92,19 @@ impl GameState {
         self.buildings.build(ty, &mut self.resources)
     }
 
+    /// Get the current cost to build the next level of a building by name
+    pub fn build_cost(&self, name: String) -> Resources {
+        let ty = match name.as_str() {
+            "farm" => BuildingType::Farm,
+            "lumber_mill" => BuildingType::LumberMill,
+            "quarry" => BuildingType::Quarry,
+            "mine" => BuildingType::Mine,
+            "bakery" => BuildingType::Bakery,
+            _ => return Resources::default(),
+        };
+        self.buildings.cost(ty)
+    }
+
     /// Get resource by name
     pub fn get_resource(&self, name: String) -> f64 {
         match name.as_str() {

@@ -46,6 +46,14 @@ impl Game {
         GAME.with(|g| g.borrow().get_resource(name.into()))
     }
 
+    /// Get the cost of constructing the next level of a building as a JSON string
+    pub fn building_cost(name: &str) -> String {
+        GAME.with(|g| {
+            let cost = g.borrow().build_cost(name.into());
+            serde_json::to_string(&cost).expect("serialize cost")
+        })
+    }
+
     /// Save game to a base64 string
     pub fn save() -> String {
         GAME.with(|g| g.borrow().save_string())
