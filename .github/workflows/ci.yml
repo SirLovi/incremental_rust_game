@@ -12,6 +12,8 @@ jobs:
         with:
           toolchain: stable
           override: true
+      - name: Install WebAssembly target
+        run: rustup target add wasm32-unknown-unknown
       - name: Cargo test
         run: cargo test --all
       - uses: actions/setup-node@v3
