@@ -48,8 +48,12 @@
         <h2>🌲 Incremental Rust Game 🪓</h2>
         <p>Wood: <span id="wood-count" class="resource-update">0</span></p>
         <p>Stone: <span id="stone-count" class="resource-update">0</span></p>
+        <p>Food: <span id="food-count" class="resource-update">0</span></p>
+        <p>Farms: <span id="farm-count">0</span></p>
         <button id="collect-wood">Collect Wood</button>
         <button id="collect-stone">Collect Stone</button>
+        <button id="collect-food">Collect Food</button>
+        <button id="build-farm">Build Farm</button>
         <button id="craft-axe">Craft Axe</button>
         <button id="craft-pickaxe">Craft Pickaxe</button>
         <div class="item-status">Axe: <span id="axe-status" class="not-crafted">No</span></div>
@@ -57,13 +61,15 @@
     </div>
 
     <script type="module">
-        import init, { collect_wood_global, collect_stone_global, craft_axe_global, craft_pickaxe_global, has_axe_global, has_pickaxe_global, get_wood_global, get_stone_global } from './pkg/incremental_rust_game.js';
+        import init, { collect_wood_global, collect_stone_global, collect_food_global, build_farm_global, craft_axe_global, craft_pickaxe_global, has_axe_global, has_pickaxe_global, get_wood_global, get_stone_global, get_food_global, get_farms_global } from './pkg/incremental_rust_game.js';
     
         async function run() {
             await init();
     
             const woodCountSpan = document.getElementById("wood-count");
             const stoneCountSpan = document.getElementById("stone-count");
+            const foodCountSpan = document.getElementById("food-count");
+            const farmCountSpan = document.getElementById("farm-count");
             const axeStatusSpan = document.getElementById("axe-status");
             const pickaxeStatusSpan = document.getElementById("pickaxe-status");
     
@@ -77,6 +83,8 @@
                     const stoneAmount = get_stone_global();
                     stoneCountSpan.textContent = stoneAmount;
                 }
+                const foodAmount = get_food_global();
+                foodCountSpan.textContent = foodAmount;
             }, 1000); // Update every second
 
             document.getElementById("collect-wood").addEventListener("click", () => {
@@ -91,6 +99,20 @@
                 stoneCountSpan.textContent = stone;
                 stoneCountSpan.style.transform = "scale(1.2)";
                 setTimeout(() => stoneCountSpan.style.transform = "scale(1)", 500);
+            });
+
+            document.getElementById("collect-food").addEventListener("click", () => {
+                const food = collect_food_global();
+                foodCountSpan.textContent = food;
+                foodCountSpan.style.transform = "scale(1.2)";
+                setTimeout(() => foodCountSpan.style.transform = "scale(1)", 500);
+            });
+
+            document.getElementById("build-farm").addEventListener("click", () => {
+                if (build_farm_global()) {
+                    const farms = get_farms_global();
+                    farmCountSpan.textContent = farms;
+                }
             });
 
             document.getElementById("craft-axe").addEventListener("click", () => {

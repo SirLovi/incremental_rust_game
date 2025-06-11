@@ -13,6 +13,8 @@ extern "C" {
 pub struct Game {
     wood: u32,
     stone: u32,
+    food: u32,
+    farms: u32,
     axe: bool,
     pickaxe: bool,
 }
@@ -24,6 +26,8 @@ impl Game {
         Self {
             wood: 0,
             stone: 0,
+            food: 0,
+            farms: 0,
             axe: false,
             pickaxe: false,
         }
@@ -35,6 +39,21 @@ impl Game {
 
     pub fn collect_stone(&mut self) {
         self.stone += 1;
+    }
+
+    pub fn collect_food(&mut self) {
+        self.food += 1;
+    }
+
+    pub fn build_farm(&mut self) -> bool {
+        if self.wood >= 10 && self.stone >= 10 {
+            self.wood -= 10;
+            self.stone -= 10;
+            self.farms += 1;
+            true
+        } else {
+            false
+        }
     }
 
     pub fn craft_axe(&mut self) -> bool {
@@ -79,6 +98,20 @@ impl Game {
 
     pub fn has_pickaxe(&self) -> bool {
         self.pickaxe
+    }
+
+    pub fn get_food(&self) -> u32 {
+        self.food
+    }
+
+    pub fn get_farms(&self) -> u32 {
+        self.farms
+    }
+
+    pub fn passive_food_generation(&mut self) {
+        if self.farms > 0 {
+            self.food += self.farms;
+        }
     }
 }
 
@@ -141,6 +174,41 @@ pub fn get_stone_global() -> u32 {
 }
 
 #[wasm_bindgen]
+pub fn collect_food_global() -> u32 {
+    GAME.with(|game| {
+        let mut game = game.borrow_mut();
+        game.collect_food();
+        game.get_food()
+    })
+}
+
+#[wasm_bindgen]
+pub fn build_farm_global() -> bool {
+    GAME.with(|game| {
+        let mut game = game.borrow_mut();
+        game.build_farm()
+    })
+}
+
+#[wasm_bindgen]
+pub fn get_food_global() -> u32 {
+    GAME.with(|game| game.borrow().get_food())
+}
+
+#[wasm_bindgen]
+pub fn get_farms_global() -> u32 {
+    GAME.with(|game| game.borrow().get_farms())
+}
+
+#[wasm_bindgen]
+pub fn passive_food_generation() {
+    GAME.with(|game| {
+        let mut game = game.borrow_mut();
+        game.passive_food_generation();
+    });
+}
+
+#[wasm_bindgen]
 pub fn passive_wood_collection() {
     GAME.with(|game| {
         let mut game = game.borrow_mut();
@@ -168,6 +236,7 @@ pub fn run() {
     let closure = Closure::wrap(Box::new(move || {
         passive_wood_collection();
         passive_stone_collection();
+        passive_food_generation();
     }) as Box<dyn Fn()>);
 
     window
@@ -204,5 +273,18 @@ mod tests {
         assert!(!game.craft_pickaxe());
         assert_eq!(game.get_wood(), 15);
         assert_eq!(game.get_stone(), 10);
+    }
+
+    #[test]
+    fn build_farm_and_generate_food() {
+        let mut game = Game::new();
+        game.wood = 20;
+        game.stone = 20;
+        assert!(game.build_farm());
+        assert_eq!(game.get_farms(), 1);
+        assert_eq!(game.get_wood(), 10);
+        assert_eq!(game.get_stone(), 10);
+        game.passive_food_generation();
+        assert_eq!(game.get_food(), 1);
     }
 }
