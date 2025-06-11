@@ -64,6 +64,7 @@ impl GameState {
             for _ in 0..ticks {
                 let y = self.tick_yield();
                 self.resources.add(&y);
+                self.resources.clamp_non_negative();
             }
             self.last_update = Some(prev + ticks as f64 * self.tick_rate);
         } else {
@@ -140,5 +141,18 @@ mod tests {
         g.tick(10.0);
         g.tick(20.0);
         assert_eq!(g.resources.food, start + 10.0);
+    }
+
+    #[test]
+    fn bakery_food_depletion() {
+        let mut g = GameState::new();
+        g.resources = res(100.0, 100.0, 100.5, 100.0, 100.0);
+        g.research.unlock(Tech::Baking);
+        assert!(g.build("bakery".into()));
+        g.resources.food = 0.5;
+        g.tick(0.0);
+        g.tick(1.0);
+        assert_eq!(g.resources.food, 0.0);
+        assert!((g.resources.gold - 100.2).abs() < 1e-6);
     }
 }
