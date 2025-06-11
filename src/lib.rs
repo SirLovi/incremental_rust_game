@@ -5,12 +5,16 @@ mod buildings;
 mod upgrades;
 mod research;
 mod systems;
+mod achievements;
+mod events;
 
 pub use resources::*;
 pub use buildings::*;
 pub use upgrades::*;
 pub use research::*;
 pub use systems::*;
+pub use achievements::*;
+pub use events::*;
 
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
@@ -69,5 +73,18 @@ impl Game {
     /// Change tick rate in seconds
     pub fn set_tick_rate(rate: f64) {
         GAME.with(|g| g.borrow_mut().tick_rate = rate.max(0.2).min(10.0));
+    }
+
+    /// Retrieve the next log message from the game if available
+    pub fn pop_log() -> Option<String> {
+        GAME.with(|g| g.borrow_mut().pop_log())
+    }
+
+    /// Get the list of unlocked achievements as a JSON string
+    pub fn achievements() -> String {
+        GAME.with(|g| {
+            let list = g.borrow().achievements_list();
+            serde_json::to_string(&list).expect("serialize achievements")
+        })
     }
 }
