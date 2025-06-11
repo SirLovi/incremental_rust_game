@@ -50,7 +50,8 @@ impl GameState {
     pub fn new() -> Self {
         GameState {
             version: SAVE_VERSION,
-            resources: Resources::default(),
+            // Provide some starting supplies so the player can build initial tools
+            resources: res(20.0, 20.0, 0.0, 0.0, 0.0),
             buildings: Buildings::default(),
             upgrades: Upgrades::default(),
             research: Research::default(),
@@ -205,5 +206,13 @@ mod tests {
         g.tick(1.0);
         assert_eq!(g.resources.food, 0.0);
         assert!((g.resources.gold - 100.2).abs() < 1e-6);
+    }
+
+    #[wasm_bindgen_test]
+    fn starting_resources_nonzero() {
+        let g = GameState::new();
+        // Player should start with enough wood and stone for a first farm
+        assert!(g.resources.wood >= 10.0);
+        assert!(g.resources.stone >= 10.0);
     }
 }
