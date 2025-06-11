@@ -25,6 +25,25 @@ impl Resources {
         self.gold += other.gold;
     }
 
+    /// Ensure all resources are non-negative
+    pub fn clamp_non_negative(&mut self) {
+        if self.wood < 0.0 {
+            self.wood = 0.0;
+        }
+        if self.stone < 0.0 {
+            self.stone = 0.0;
+        }
+        if self.food < 0.0 {
+            self.food = 0.0;
+        }
+        if self.iron < 0.0 {
+            self.iron = 0.0;
+        }
+        if self.gold < 0.0 {
+            self.gold = 0.0;
+        }
+    }
+
     /// Subtract other resources if affordable
     pub fn subtract(&mut self, cost: &Resources) -> bool {
         if self.can_afford(cost) {
