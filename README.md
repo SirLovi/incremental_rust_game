@@ -24,6 +24,7 @@ Make sure you have installed:
 ```
 .\BUILD.bat
 ```
+Run BUILD.bat to rebuild and generate `wasm_base64.js` before serving.
 
 Open this URL in any browser:
 ```
