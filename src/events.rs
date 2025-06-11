@@ -39,8 +39,9 @@ mod tests {
     use super::*;
     use rand::SeedableRng;
     use rand::rngs::StdRng;
+    use wasm_bindgen_test::wasm_bindgen_test;
 
-    #[test]
+    #[wasm_bindgen_test]
     fn farm_loss_triggers() {
         let mut b = Buildings::default();
         for _ in 0..10 {
