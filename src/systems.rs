@@ -171,8 +171,9 @@ impl GameState {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use wasm_bindgen_test::wasm_bindgen_test;
 
-    #[test]
+    #[wasm_bindgen_test]
     fn cost_curve() {
         let c0 = Buildings::cost_for_level(BuildingType::Farm, 0).wood;
         let c1 = Buildings::cost_for_level(BuildingType::Farm, 1).wood;
@@ -180,7 +181,7 @@ mod tests {
         assert!((c1 - c0 * 1.15).abs() < 1e-6);
     }
 
-    #[test]
+    #[wasm_bindgen_test]
     fn offline_progress() {
         let mut g = GameState::new();
         g.event_chance = 0.0;
@@ -192,7 +193,7 @@ mod tests {
         assert_eq!(g.resources.food, start + 10.0);
     }
 
-    #[test]
+    #[wasm_bindgen_test]
     fn bakery_food_depletion() {
         let mut g = GameState::new();
         g.event_chance = 0.0;

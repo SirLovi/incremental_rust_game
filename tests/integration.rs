@@ -1,7 +1,8 @@
 use incremental_rust_game::{GameState, res, farm_loss_event, BuildingType};
 use rand::{rngs::StdRng, SeedableRng};
+use wasm_bindgen_test::wasm_bindgen_test;
 
-#[test]
+#[wasm_bindgen_test]
 fn ten_minutes_growth() {
     let mut g = GameState::new();
     g.event_chance = 0.0;
@@ -13,7 +14,7 @@ fn ten_minutes_growth() {
     assert_eq!(g.resources.food, start + 600.0);
 }
 
-#[test]
+#[wasm_bindgen_test]
 fn event_triggers() {
     let mut g = GameState::new();
     g.resources = res(0.0, 0.0, 0.0, 0.0, 0.0);
