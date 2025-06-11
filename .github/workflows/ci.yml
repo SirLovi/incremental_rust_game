@@ -1,0 +1,20 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Cargo test
+        run: cargo test --all
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm install -g wasm-pack
+      - name: Wasm tests
+        run: wasm-pack test --headless
