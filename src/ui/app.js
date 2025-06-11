@@ -1,4 +1,5 @@
 import init, { Game } from '../../pkg/incremental_rust_game.js';
+import { wasm_base64 } from '../../pkg/wasm_base64.js';
 import { el, button } from './components.js';
 
 const resourceNames = ['wood','stone','food','iron','gold','energy','science','mana'];
@@ -24,5 +25,6 @@ function tick(){game.tick(Date.now()/1000);updateResources();let msg=game.pop_lo
 
 function autosave(){localStorage.setItem('idle-save',game.save());saveStamp.textContent=new Date().toLocaleTimeString();}
 
-async function run(){await init();game=new Game();buildUI();updateResources();setInterval(tick,1000);setInterval(autosave,60000);document.addEventListener('keydown',e=>{if(e.key==='s')autosave();if(e.key==='l'){const d=localStorage.getItem('idle-save');if(d){game.load(d);log('Loaded');updateResources();}}});const d=localStorage.getItem('idle-save');if(d){game.load(d);}autosave();}
+function decodeWasm(b64){const bin=atob(b64);const arr=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return arr;}
+async function run(){await init(decodeWasm(wasm_base64));game=new Game();buildUI();updateResources();setInterval(tick,1000);setInterval(autosave,60000);document.addEventListener('keydown',e=>{if(e.key==='s')autosave();if(e.key==='l'){const d=localStorage.getItem('idle-save');if(d){game.load(d);log('Loaded');updateResources();}}});const d=localStorage.getItem('idle-save');if(d){game.load(d);}autosave();}
 run();
