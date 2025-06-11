@@ -1,4 +1,4 @@
-use crate::resources::{res, Resources};
+use crate::resources::{res, res_ext, Resources};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -15,6 +15,12 @@ pub enum BuildingType {
     Mine,
     /// Converts food into gold
     Bakery,
+    /// Generates energy
+    Generator,
+    /// Produces science
+    Lab,
+    /// Generates mana slowly
+    Shrine,
 }
 
 /// Static data for a building
@@ -50,6 +56,21 @@ fn info(ty: BuildingType) -> BuildingInfo {
             base_cost: res(50.0, 25.0, 100.0, 10.0, 0.0),
             growth: 1.2,
             yield_per_tick: res(0.0, 0.0, -1.0, 0.0, 0.2),
+        },
+        BuildingType::Generator => BuildingInfo {
+            base_cost: res(30.0, 20.0, 0.0, 5.0, 10.0),
+            growth: 1.25,
+            yield_per_tick: res_ext(0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0),
+        },
+        BuildingType::Lab => BuildingInfo {
+            base_cost: res(50.0, 50.0, 0.0, 10.0, 20.0),
+            growth: 1.25,
+            yield_per_tick: res_ext(0.0, 0.0, 0.0, 0.0, 0.0, -0.5, 0.5, 0.0),
+        },
+        BuildingType::Shrine => BuildingInfo {
+            base_cost: res(100.0, 100.0, 0.0, 50.0, 0.0),
+            growth: 1.3,
+            yield_per_tick: res_ext(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2),
         },
     }
 }

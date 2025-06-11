@@ -1,13 +1,13 @@
+use crate::achievements::Achievements;
 use crate::buildings::{BuildingType, Buildings};
+use crate::events::check_random_events;
+use crate::research::{Research, Tech};
 #[allow(unused_imports)]
 use crate::resources::{res, Resources};
 use crate::upgrades::{UpgradeType, Upgrades};
-use crate::research::{Research, Tech};
-use crate::achievements::Achievements;
-use crate::events::check_random_events;
+use base64::Engine;
 use rand::thread_rng;
 use serde::{Deserialize, Serialize};
-use base64::Engine;
 
 /// Current save format version
 pub const SAVE_VERSION: u32 = 1;
@@ -27,6 +27,8 @@ pub struct GameState {
     pub research: Research,
     /// Achievements unlocked
     pub achievements: Achievements,
+    /// Prestige information
+    pub prestige: crate::prestige::Prestige,
     /// Pending event log messages
     #[serde(skip)]
     pub event_log: Vec<String>,
@@ -56,6 +58,7 @@ impl GameState {
             upgrades: Upgrades::default(),
             research: Research::default(),
             achievements: Achievements::default(),
+            prestige: crate::prestige::Prestige::default(),
             event_log: Vec::new(),
             event_chance: crate::events::FARM_LOSS_CHANCE,
             tick_rate: 1.0,
@@ -68,27 +71,52 @@ impl GameState {
         let mut r = self.buildings.total_yield();
         let m = self.upgrades.multiplier(UpgradeType::Efficiency);
         r = r.scale(m);
+        r = r.scale(self.prestige.bonus_multiplier());
+        if r.mana > 0.0 {
+            r.mana *= self.upgrades.multiplier(UpgradeType::AlchemyBoost);
+        }
         r
+    }
+
+    /// Perform a prestige reset gaining permanent bonuses
+    pub fn prestige(&mut self) {
+        let gained = ((self.resources.gold / 1e6).sqrt().floor()) as u32;
+        if gained > 0 {
+            self.prestige.points += gained;
+        }
+        let base = GameState::new();
+        self.resources = base.resources;
+        self.buildings = base.buildings;
+        self.upgrades = base.upgrades;
+        self.research = base.research;
+        self.achievements = base.achievements;
+        self.last_update = base.last_update;
     }
 
     /// Advance the game by delta seconds
     pub fn tick(&mut self, now: f64) {
         if let Some(prev) = self.last_update {
-            let elapsed = now - prev;
+            let elapsed = (now - prev).min(8.0 * 3600.0);
             let ticks = (elapsed / self.tick_rate).floor() as u64;
             for _ in 0..ticks {
                 let y = self.tick_yield();
                 self.resources.add(&y);
                 self.resources.clamp_non_negative();
-                if let Some(msg) =
-                    check_random_events(&mut self.buildings, &mut thread_rng(), self.event_chance)
-                {
+                if let Some(msg) = check_random_events(
+                    &mut self.buildings,
+                    &mut self.resources,
+                    &mut thread_rng(),
+                    self.event_chance,
+                ) {
                     self.event_log.push(msg);
                 }
                 let new_ach = self.achievements.check(&self.buildings, &self.research);
                 self.event_log.extend(new_ach);
             }
             self.last_update = Some(prev + ticks as f64 * self.tick_rate);
+            if self.last_update.unwrap() < now {
+                self.last_update = Some(now);
+            }
         } else {
             self.last_update = Some(now);
         }
@@ -102,6 +130,9 @@ impl GameState {
             "quarry" => BuildingType::Quarry,
             "mine" => BuildingType::Mine,
             "bakery" => BuildingType::Bakery,
+            "generator" => BuildingType::Generator,
+            "lab" => BuildingType::Lab,
+            "shrine" => BuildingType::Shrine,
             _ => return false,
         };
         // Check research requirements
@@ -109,6 +140,15 @@ impl GameState {
             return false;
         }
         if matches!(ty, BuildingType::Bakery) && !self.research.is_unlocked(Tech::Baking) {
+            return false;
+        }
+        if matches!(ty, BuildingType::Generator) && !self.research.is_unlocked(Tech::Electricity) {
+            return false;
+        }
+        if matches!(ty, BuildingType::Lab) && !self.research.is_unlocked(Tech::Education) {
+            return false;
+        }
+        if matches!(ty, BuildingType::Shrine) && !self.research.is_unlocked(Tech::Alchemy) {
             return false;
         }
         self.buildings.build(ty, &mut self.resources)
@@ -122,6 +162,9 @@ impl GameState {
             "quarry" => BuildingType::Quarry,
             "mine" => BuildingType::Mine,
             "bakery" => BuildingType::Bakery,
+            "generator" => BuildingType::Generator,
+            "lab" => BuildingType::Lab,
+            "shrine" => BuildingType::Shrine,
             _ => return Resources::default(),
         };
         self.buildings.cost(ty)
@@ -135,15 +178,17 @@ impl GameState {
             "food" => self.resources.food,
             "iron" => self.resources.iron,
             "gold" => self.resources.gold,
+            "energy" => self.resources.energy,
+            "science" => self.resources.science,
+            "mana" => self.resources.mana,
             _ => 0.0,
         }
     }
 
     /// Save state to base64 string
     pub fn save_string(&self) -> String {
-        base64::engine::general_purpose::STANDARD.encode(
-            serde_json::to_vec(self).expect("serialize"),
-        )
+        base64::engine::general_purpose::STANDARD
+            .encode(serde_json::to_vec(self).expect("serialize"))
     }
 
     /// Load state from base64 string

@@ -13,6 +13,12 @@ pub struct Resources {
     pub iron: f64,
     /// Amount of gold
     pub gold: f64,
+    /// Amount of energy
+    pub energy: f64,
+    /// Amount of science
+    pub science: f64,
+    /// Amount of mana
+    pub mana: f64,
 }
 
 impl Resources {
@@ -23,6 +29,9 @@ impl Resources {
         self.food += other.food;
         self.iron += other.iron;
         self.gold += other.gold;
+        self.energy += other.energy;
+        self.science += other.science;
+        self.mana += other.mana;
     }
 
     /// Ensure all resources are non-negative
@@ -42,6 +51,15 @@ impl Resources {
         if self.gold < 0.0 {
             self.gold = 0.0;
         }
+        if self.energy < 0.0 {
+            self.energy = 0.0;
+        }
+        if self.science < 0.0 {
+            self.science = 0.0;
+        }
+        if self.mana < 0.0 {
+            self.mana = 0.0;
+        }
     }
 
     /// Subtract other resources if affordable
@@ -52,6 +70,9 @@ impl Resources {
             self.food -= cost.food;
             self.iron -= cost.iron;
             self.gold -= cost.gold;
+            self.energy -= cost.energy;
+            self.science -= cost.science;
+            self.mana -= cost.mana;
             true
         } else {
             false
@@ -65,6 +86,9 @@ impl Resources {
             && self.food >= cost.food
             && self.iron >= cost.iron
             && self.gold >= cost.gold
+            && self.energy >= cost.energy
+            && self.science >= cost.science
+            && self.mana >= cost.mana
     }
 
     /// Scale resources by factor
@@ -75,6 +99,9 @@ impl Resources {
             food: self.food * factor,
             iron: self.iron * factor,
             gold: self.gold * factor,
+            energy: self.energy * factor,
+            science: self.science * factor,
+            mana: self.mana * factor,
         }
     }
 }
@@ -87,5 +114,31 @@ pub fn res(wood: f64, stone: f64, food: f64, iron: f64, gold: f64) -> Resources 
         food,
         iron,
         gold,
+        energy: 0.0,
+        science: 0.0,
+        mana: 0.0,
+    }
+}
+
+/// Create a resource bundle with all fields specified
+pub fn res_ext(
+    wood: f64,
+    stone: f64,
+    food: f64,
+    iron: f64,
+    gold: f64,
+    energy: f64,
+    science: f64,
+    mana: f64,
+) -> Resources {
+    Resources {
+        wood,
+        stone,
+        food,
+        iron,
+        gold,
+        energy,
+        science,
+        mana,
     }
 }

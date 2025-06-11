@@ -7,6 +7,10 @@ use std::collections::HashMap;
 pub enum UpgradeType {
     /// Increases all yields
     Efficiency,
+    /// Increases resource storage cap
+    Storage,
+    /// Boost mana production
+    AlchemyBoost,
 }
 
 struct UpgradeInfo {
@@ -21,6 +25,16 @@ fn info(ty: UpgradeType) -> UpgradeInfo {
             base_cost: res(50.0, 50.0, 0.0, 0.0, 0.0),
             growth: 1.5,
             multiplier: 1.1,
+        },
+        UpgradeType::Storage => UpgradeInfo {
+            base_cost: res(100.0, 100.0, 0.0, 0.0, 0.0),
+            growth: 1.7,
+            multiplier: 1.2,
+        },
+        UpgradeType::AlchemyBoost => UpgradeInfo {
+            base_cost: res(0.0, 0.0, 0.0, 0.0, 200.0),
+            growth: 2.0,
+            multiplier: 1.5,
         },
     }
 }

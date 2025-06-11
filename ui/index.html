@@ -5,6 +5,7 @@
     <title>Rust Idle Game</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
 </head>
 <body class="bg-gray-900 text-gray-100 p-4">
     <div id="resources" class="flex space-x-4 mb-4"></div>
@@ -15,7 +16,9 @@
         <label>Tick rate <input id="tick-rate" type="number" min="0.2" max="10" step="0.1" value="1" class="text-black"></label>
         <button id="save" class="bg-blue-600 px-2 py-1 ml-2">Save</button>
         <button id="load" class="bg-green-600 px-2 py-1 ml-2">Load</button>
+        <span id="save-stamp" class="ml-2 text-xs"></span>
     </div>
-    <script type="module" src="main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script type="module" src="../src/ui/app.js"></script>
 </body>
 </html>
