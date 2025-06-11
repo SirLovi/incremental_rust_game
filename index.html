@@ -57,7 +57,7 @@
     </div>
 
     <script type="module">
-        import init, { collect_wood_global, collect_stone_global, craft_axe_global, craft_pickaxe_global, has_axe_global, has_pickaxe_global } from './pkg/incremental_rust_game.js';
+        import init, { collect_wood_global, collect_stone_global, craft_axe_global, craft_pickaxe_global, has_axe_global, has_pickaxe_global, get_wood_global, get_stone_global } from './pkg/incremental_rust_game.js';
     
         async function run() {
             await init();
@@ -67,15 +67,15 @@
             const axeStatusSpan = document.getElementById("axe-status");
             const pickaxeStatusSpan = document.getElementById("pickaxe-status");
     
-            // Periodically update resources if tools are crafted
+            // Periodically update resource displays
             setInterval(() => {
                 if (has_axe_global()) {
-                    const newWoodCount = collect_wood_global(); // Simulate collecting wood
-                    woodCountSpan.textContent = newWoodCount;
+                    const woodAmount = get_wood_global();
+                    woodCountSpan.textContent = woodAmount;
                 }
                 if (has_pickaxe_global()) {
-                    const newStoneCount = collect_stone_global(); // Simulate collecting stone
-                    stoneCountSpan.textContent = newStoneCount;
+                    const stoneAmount = get_stone_global();
+                    stoneCountSpan.textContent = stoneAmount;
                 }
             }, 1000); // Update every second
 
