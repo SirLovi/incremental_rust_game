@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rust Idle Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-gray-100 p-4">
+    <div id="resources" class="flex space-x-4 mb-4"></div>
+    <div id="buildings" class="grid grid-cols-2 gap-4 mb-4"></div>
+    <div id="log" class="h-32 overflow-y-auto bg-gray-800 p-2"></div>
+    <div class="mt-4">
+        <label>Tick rate <input id="tick-rate" type="number" min="0.2" max="10" step="0.1" value="1" class="text-black"></label>
+        <button id="save" class="bg-blue-600 px-2 py-1 ml-2">Save</button>
+        <button id="load" class="bg-green-600 px-2 py-1 ml-2">Load</button>
+    </div>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
