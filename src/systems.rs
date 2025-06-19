@@ -78,6 +78,11 @@ impl GameState {
         r
     }
 
+    /// Net change of each resource per second
+    pub fn resource_rate(&self) -> Resources {
+        self.tick_yield().scale(1.0 / self.tick_rate)
+    }
+
     /// Perform a prestige reset gaining permanent bonuses
     pub fn prestige(&mut self) {
         let gained = ((self.resources.gold / 1e6).sqrt().floor()) as u32;
@@ -170,6 +175,22 @@ impl GameState {
         self.buildings.cost(ty)
     }
 
+    /// Number of buildings of the given type
+    pub fn building_count(&self, name: String) -> u32 {
+        let ty = match name.as_str() {
+            "farm" => BuildingType::Farm,
+            "lumber_mill" => BuildingType::LumberMill,
+            "quarry" => BuildingType::Quarry,
+            "mine" => BuildingType::Mine,
+            "bakery" => BuildingType::Bakery,
+            "generator" => BuildingType::Generator,
+            "lab" => BuildingType::Lab,
+            "shrine" => BuildingType::Shrine,
+            _ => return 0,
+        };
+        self.buildings.level(ty)
+    }
+
     /// Get resource by name
     pub fn get_resource(&self, name: String) -> f64 {
         match name.as_str() {
@@ -181,6 +202,22 @@ impl GameState {
             "energy" => self.resources.energy,
             "science" => self.resources.science,
             "mana" => self.resources.mana,
+            _ => 0.0,
+        }
+    }
+
+    /// Net resource change per second by name
+    pub fn get_resource_rate(&self, name: String) -> f64 {
+        let rates = self.resource_rate();
+        match name.as_str() {
+            "wood" => rates.wood,
+            "stone" => rates.stone,
+            "food" => rates.food,
+            "iron" => rates.iron,
+            "gold" => rates.gold,
+            "energy" => rates.energy,
+            "science" => rates.science,
+            "mana" => rates.mana,
             _ => 0.0,
         }
     }

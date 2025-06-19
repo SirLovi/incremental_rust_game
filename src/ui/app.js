@@ -1,6 +1,6 @@
 import init, { Game } from '../../pkg/incremental_rust_game.js';
 import { wasm_base64 } from '../../pkg/wasm_base64.js';
-import { el, button } from './components.js';
+import { el, button, displayName } from './components.js';
 
 const resourceNames = ['wood','stone','food','iron','gold','energy','science','mana'];
 const buildingNames = ['farm','lumber_mill','quarry','mine','bakery','generator','lab','shrine'];
@@ -10,20 +10,173 @@ const bldDiv = document.getElementById('buildings');
 const logDiv = document.getElementById('log');
 const achDiv = document.getElementById('achievements');
 const saveStamp = document.getElementById('save-stamp');
+const tickInput = document.getElementById('tick-rate');
+const saveBtn = document.getElementById('save');
+const loadBtn = document.getElementById('load');
 const buildingButtons = {};
+let lastSave = 0;
+let currentToast = null;
 
-function formatCost(cost){return resourceNames.map(r=>cost[r]>0?`${cost[r].toFixed(1)} ${r}`:'').filter(Boolean).join(', ')}
-function log(msg){const p=document.createElement('p');p.textContent=msg;logDiv.appendChild(p);logDiv.scrollTop=logDiv.scrollHeight;Toastify({text:msg,duration:3000}).showToast();}
+function updateLoadButton(){
+    loadBtn.disabled = !localStorage.getItem('idle-save');
+}
 
-function updateResources(){resDiv.innerHTML='';resourceNames.forEach(r=>{const val=Game.get_resource(r);resDiv.appendChild(el('div',{class:'mb-1'},el('span',{class:'mr-1'},`${r}: ${val.toFixed(1)}`)));});
-    buildingNames.forEach(name=>{const cost=JSON.parse(Game.building_cost(name));const btn=buildingButtons[name];if(!btn)return;btn.textContent=`Build ${name}`;btn.title=formatCost(cost);btn.disabled=!resourceNames.every(r=>Game.get_resource(r)>=cost[r]);});}
+function updateAchievements(){
+    achDiv.innerHTML='';
+    const list=JSON.parse(Game.achievements());
+    if(list.length===0) return;
+    const ul=el('ul');
+    list.forEach(id=>{
+        ul.appendChild(el('li',{title:id},`✅ ${displayName(id)}`));
+    });
+    achDiv.appendChild(ul);
+}
 
-function buildUI(){bldDiv.innerHTML='';buildingNames.forEach(name=>{const btn=button(`Build ${name}`,()=>{if(Game.build(name)){log(`Built ${name}`);}else{log(`Cannot build ${name}`);}updateResources();});buildingButtons[name]=btn;bldDiv.appendChild(btn);});}
+function formatCost(cost){
+    return resourceNames
+        .map(r=>cost[r]>0?`${cost[r].toFixed(1)} ${displayName(r)}`:'')
+        .filter(Boolean)
+        .join(', ');
+}
+function log(msg){
+    const p=document.createElement('p');
+    p.textContent=msg;
+    logDiv.appendChild(p);
+    logDiv.scrollTop=logDiv.scrollHeight;
+    toast(msg);
+    while(logDiv.children.length>100) logDiv.removeChild(logDiv.firstChild);
+}
 
-function tick(){Game.tick(Date.now()/1000);updateResources();let msg=Game.pop_log();while(msg){log(msg);msg=Game.pop_log();}achDiv.textContent=JSON.parse(Game.achievements()).join('\n');}
+function toast(msg, color='green'){
+    if(currentToast) currentToast.hideToast();
+    currentToast = Toastify({text:msg,duration:3000,style:{background:color}});
+    currentToast.showToast();
+}
 
-function autosave(){localStorage.setItem('idle-save',Game.save());saveStamp.textContent=new Date().toLocaleTimeString();}
+function updateResources(){
+    resDiv.innerHTML='';
+    resourceNames.forEach(r=>{
+        const val=Game.get_resource(r);
+        const rate=Game.get_resource_rate(r);
+        const color=rate>0?'text-green-400':rate<0?'text-red-400':'text-gray-400';
+        const rateStr=`(${rate>=0?'+':''}${rate.toFixed(1)}/s)`;
+        resDiv.appendChild(
+            el('div',{class:'mb-1'},
+                el('span',{class:'mr-1'},`${displayName(r)}: ${val.toFixed(1)}`),
+                el('span',{class:`ml-1 ${color}`},rateStr)
+            )
+        );
+    });
+    buildingNames.forEach(name=>{
+        const cost=JSON.parse(Game.building_cost(name));
+        const btn=buildingButtons[name];
+        if(!btn) return;
+        const count=Game.building_count(name);
+        btn.textContent=`Build ${displayName(name)} (${count})`;
+        btn.title=formatCost(cost);
+        const affordable=resourceNames.every(r=>Game.get_resource(r)>=cost[r]);
+        btn.disabled=!affordable;
+    });
+}
 
-function decodeWasm(b64){const bin=atob(b64);const arr=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return arr;}
-async function run(){await init(decodeWasm(wasm_base64));new Game();buildUI();updateResources();setInterval(tick,1000);setInterval(autosave,60000);document.addEventListener('keydown',e=>{if(e.key==='s')autosave();if(e.key==='l'){const d=localStorage.getItem('idle-save');if(d){Game.load(d);log('Loaded');updateResources();}}});const d=localStorage.getItem('idle-save');if(d){Game.load(d);}autosave();}
-run();
+function buildUI(){
+    bldDiv.innerHTML='';
+    buildingNames.forEach(name=>{
+        const btn=button(`Build ${displayName(name)} (${Game.building_count(name)})`,()=>{
+            if(Game.build(name)){
+                log(`Built ${displayName(name)}`);
+            }else{
+                log(`Cannot build ${displayName(name)}`);
+            }
+            updateResources();
+        });
+        buildingButtons[name]=btn;
+        bldDiv.appendChild(btn);
+    });
+}
+
+function tick(){
+    Game.tick(Date.now()/1000);
+    updateResources();
+    let msg=Game.pop_log();
+    while(msg){
+        log(msg);
+        msg=Game.pop_log();
+    }
+    updateAchievements();
+}
+
+function saveGame(showToast=true){
+    lastSave=Date.now();
+    localStorage.setItem('idle-save',Game.save());
+    saveStamp.textContent=new Date(lastSave).toLocaleTimeString();
+    updateLoadButton();
+    if(showToast) toast('Saved');
+}
+
+function loadGame(){
+    const d=localStorage.getItem('idle-save');
+    if(d){
+        Game.load(d);
+        updateResources();
+        toast('Loaded');
+        updateAchievements();
+    }
+}
+
+function autosave(){
+    if(Date.now()-lastSave<60000) return;
+    saveGame(false);
+}
+
+function decodeWasm(b64){
+    const bin=atob(b64);
+    const arr=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+    return arr;
+}
+
+async function run(){
+    try{
+        await init(decodeWasm(wasm_base64));
+    }catch(err){
+        console.error(err);
+        toast('Failed to load WASM', 'red');
+        return;
+    }
+
+    new Game();
+    buildUI();
+    updateResources();
+    setInterval(tick,1000);
+    setInterval(autosave,60000);
+
+    saveBtn.onclick=()=>saveGame(true);
+    loadBtn.onclick=loadGame;
+    tickInput.oninput=()=>{
+        Game.set_tick_rate(parseFloat(tickInput.value));
+        localStorage.setItem('tick-rate', tickInput.value);
+    };
+
+    document.addEventListener('keydown',e=>{
+        if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return;
+        if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey) return;
+        if(e.key==='Escape' && currentToast){ currentToast.hideToast(); currentToast=null; return; }
+        if(e.key==='s'){ e.preventDefault(); saveGame(true);}
+        if(e.key==='l'){ e.preventDefault(); loadGame(); }
+    });
+
+    const savedRate=localStorage.getItem('tick-rate');
+    if(savedRate){
+        tickInput.value=savedRate;
+        Game.set_tick_rate(parseFloat(savedRate));
+    }
+
+    const d=localStorage.getItem('idle-save');
+    if(d){ Game.load(d); }
+    updateLoadButton();
+    updateAchievements();
+    saveGame(false);
+}
+
+document.addEventListener('DOMContentLoaded',run);
