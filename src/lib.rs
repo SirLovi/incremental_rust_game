@@ -60,6 +60,16 @@ impl Game {
         })
     }
 
+    /// Number of buildings already constructed of the given type
+    pub fn building_count(name: &str) -> u32 {
+        GAME.with(|g| g.borrow().building_count(name.into()))
+    }
+
+    /// Net resource change per second for the given resource
+    pub fn get_resource_rate(name: &str) -> f64 {
+        GAME.with(|g| g.borrow().get_resource_rate(name.into()))
+    }
+
     /// Save game to a base64 string
     pub fn save() -> String {
         GAME.with(|g| g.borrow().save_string())
