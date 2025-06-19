@@ -13,6 +13,7 @@ const saveStamp = document.getElementById('save-stamp');
 const tickInput = document.getElementById('tick-rate');
 const saveBtn = document.getElementById('save');
 const loadBtn = document.getElementById('load');
+const resetBtn = document.getElementById('reset');
 const buildingButtons = {};
 let lastSave = 0;
 let currentToast = null;
@@ -39,10 +40,11 @@ function formatCost(cost){
         .join(', ');
 }
 function log(msg){
+    const atBottom=logDiv.scrollTop+logDiv.clientHeight>=logDiv.scrollHeight-5;
     const p=document.createElement('p');
     p.textContent=msg;
     logDiv.appendChild(p);
-    logDiv.scrollTop=logDiv.scrollHeight;
+    if(atBottom) logDiv.scrollTop=logDiv.scrollHeight;
     toast(msg);
     while(logDiv.children.length>100) logDiv.removeChild(logDiv.firstChild);
 }
@@ -61,8 +63,8 @@ function updateResources(){
         const color=rate>0?'text-green-400':rate<0?'text-red-400':'text-gray-400';
         const rateStr=`(${rate>=0?'+':''}${rate.toFixed(1)}/s)`;
         resDiv.appendChild(
-            el('div',{class:'mb-1'},
-                el('span',{class:'mr-1'},`${displayName(r)}: ${val.toFixed(1)}`),
+            el('div',{class:'mb-1 mx-2'},
+                el('span',{},`${displayName(r)} ${val.toFixed(1)}`),
                 el('span',{class:`ml-1 ${color}`},rateStr)
             )
         );
@@ -72,7 +74,7 @@ function updateResources(){
         const btn=buildingButtons[name];
         if(!btn) return;
         const count=Game.building_count(name);
-        btn.textContent=`Build ${displayName(name)} (${count})`;
+        btn.textContent=`Build ${displayName(name)} (${count}) – ${formatCost(cost)}`;
         btn.title=formatCost(cost);
         const affordable=resourceNames.every(r=>Game.get_resource(r)>=cost[r]);
         btn.disabled=!affordable;
@@ -82,14 +84,18 @@ function updateResources(){
 function buildUI(){
     bldDiv.innerHTML='';
     buildingNames.forEach(name=>{
-        const btn=button(`Build ${displayName(name)} (${Game.building_count(name)})`,()=>{
-            if(Game.build(name)){
-                log(`Built ${displayName(name)}`);
-            }else{
-                log(`Cannot build ${displayName(name)}`);
-            }
-            updateResources();
-        });
+        const cost=JSON.parse(Game.building_cost(name));
+        const btn=button(`Build ${displayName(name)} (${Game.building_count(name)}) – ${formatCost(cost)}`,
+            ()=>{
+                if(Game.build(name)){
+                    log(`Built ${displayName(name)}`);
+                }else{
+                    log(`Cannot build ${displayName(name)}`);
+                }
+                updateResources();
+            },
+            formatCost(cost)
+        );
         buildingButtons[name]=btn;
         bldDiv.appendChild(btn);
     });
@@ -121,6 +127,7 @@ function loadGame(){
         updateResources();
         toast('Loaded');
         updateAchievements();
+        updateLoadButton();
     }
 }
 
@@ -153,6 +160,7 @@ async function run(){
 
     saveBtn.onclick=()=>saveGame(true);
     loadBtn.onclick=loadGame;
+    resetBtn.onclick=()=>{ localStorage.clear(); location.reload(); };
     tickInput.oninput=()=>{
         Game.set_tick_rate(parseFloat(tickInput.value));
         localStorage.setItem('tick-rate', tickInput.value);
