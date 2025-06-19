@@ -27,11 +27,19 @@ export function button(label, onclick, tooltip='') {
             desc.set.call(b, v);
             if (v) {
                 b.className = 'btn-disabled m-1';
+                b.classList.remove('ring','ring-green-400');
             } else {
                 b.className = 'btn-primary m-1';
             }
         }
     });
     b.disabled = false;
+
+    b.addEventListener('mouseenter', () => {
+        if (!b.disabled) b.classList.add('ring','ring-green-400');
+    });
+    b.addEventListener('mouseleave', () => {
+        b.classList.remove('ring','ring-green-400');
+    });
     return b;
 }
