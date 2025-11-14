@@ -20,7 +20,7 @@ base64 = "0.22"
 futures = "0.3"
 js-sys = "0.3"
 rand = "0.9"
-getrandom = { version = "0.2.16", features = ["js"] }
+getrandom = { version = "0.3.4", features = ["js"] }
 
 
 [dev-dependencies]
