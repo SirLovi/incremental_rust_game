@@ -14,7 +14,7 @@ wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3", features = ["console","Window","Document"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-base64 = "0.21"
+base64 = "0.22"
 
 # For better control over time and async features
 futures = "0.3"
